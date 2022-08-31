@@ -12,7 +12,7 @@ from skimage.exposure import rescale_intensity
 from skimage.color import rgb2gray
 from skimage.measure import ransac
 
-img=(img_as_float(io.imread("3.jpg")))
+img=(img_as_float(io.imread("5.jpg")))
 #KANAŁ R
 img_orig_r=np.zeros(list(img.shape))
 # print(img_orig.shape)
@@ -53,7 +53,7 @@ img_orig_b = rescale_intensity(img_orig_b)
 img_orig_b_gray = rgb2gray(img_orig_b)
 
 #%%
-imgg= (img_as_float(io.imread("4.jpg")))
+imgg= (img_as_float(io.imread("6.jpg")))
 #KANAŁ R
 img_warped_r=np.zeros(list(imgg.shape))
 img_warped_r[...,0]=imgg[...,0]
@@ -68,7 +68,7 @@ img_warped_r_gray = rgb2gray(img_warped_r)
 #KANAŁ G
 
 img_warped_g=np.zeros(list(img.shape))
-img_warped_g[...,0]=img[...,1]
+img_warped_g[...,0]=imgg[...,1]
 gradient_r, gradient_c = (np.mgrid[0:img_warped_g.shape[0],
                                    0:img_warped_g.shape[1]]
                           / float(img_warped_g.shape[0]))
@@ -80,7 +80,7 @@ img_warped_g_gray = rgb2gray(img_warped_g)
 #KANAŁ B
 
 img_warped_b=np.zeros(list(img.shape))
-img_warped_b[...,0]=img[...,2]
+img_warped_b[...,0]=imgg[...,2]
 gradient_r, gradient_c = (np.mgrid[0:img_warped_b.shape[0],
                                    0:img_warped_b.shape[1]]
                           / float(img_warped_b.shape[0]))
@@ -110,7 +110,7 @@ def gaussian_weights(window_ext, sigma=1):
     return g
 
 
-def match_corner(coord,coords_warped,coords_warped_subpix,img_orig,img_warped,window_ext=4):
+def match_corner(coord,coords_warped,coords_warped_subpix,img_orig,img_warped,window_ext=0):
     r, c = np.round(coord).astype(np.intp)
     window_orig = img_orig[r-window_ext:r+window_ext+1,c-window_ext:c+window_ext+1, :]
 
@@ -128,12 +128,12 @@ def match_corner(coord,coords_warped,coords_warped_subpix,img_orig,img_warped,wi
     # use corner with minimum SSD as correspondence
     min_idx = np.argmin(SSDs)
     return coords_warped_subpix[min_idx]
-coords_orig = np.concatenate((corner_peaks(corner_harris((img_orig_r_gray)), threshold_rel=0.001, min_distance=5),
-                              corner_peaks(corner_harris(img_orig_g_gray), threshold_rel=0.001, min_distance=5),
-                              corner_peaks(corner_harris(img_orig_b_gray), threshold_rel=0.001, min_distance=5)))
-coords_warped =np.concatenate((corner_peaks(corner_harris(img_warped_r_gray),threshold_rel=0.001, min_distance=5),
-                               corner_peaks(corner_harris(img_warped_g_gray),threshold_rel=0.001, min_distance=5),
-                               corner_peaks(corner_harris(img_warped_b_gray),threshold_rel=0.001, min_distance=5)))
+# coords_orig = np.concatenate((corner_peaks(corner_harris((img_orig_r_gray)), threshold_rel=0.001, min_distance=5),
+                            #   corner_peaks(corner_harris(img_orig_g_gray), threshold_rel=0.001, min_distance=5),
+                            #   corner_peaks(corner_harris(img_orig_b_gray), threshold_rel=0.001, min_distance=5)))
+# coords_warped =np.concatenate((corner_peaks(corner_harris(img_warped_r_gray),threshold_rel=0.001, min_distance=5),
+                            #    corner_peaks(corner_harris(img_warped_g_gray),threshold_rel=0.001, min_distance=5),
+                            #    corner_peaks(corner_harris(img_warped_b_gray),threshold_rel=0.001, min_distance=5)))
 
 coords_orig_r = corner_peaks(corner_harris((img_orig_r_gray)), threshold_rel=0.001, min_distance=5)
 coords_orig_g = corner_peaks(corner_harris(img_orig_g_gray), threshold_rel=0.001, min_distance=5)
@@ -251,19 +251,19 @@ fig, ax = plt.subplots(nrows=3, ncols=1)
 plt.gray()
 
 inlier_idxs = np.nonzero(inliers_r)[0]
-plot_matches(ax[0], img_orig_r, img_warped_r, src_r, dst_r,
+plot_matches(ax[0], img, imgg, src_r, dst_r,
              np.column_stack((inlier_idxs, inlier_idxs)), matches_color='b')
 ax[0].axis('off')
 ax[0].set_title('R Channel')
 
 inlier_idxs = np.nonzero(inliers_g)[0]
-plot_matches(ax[1], img_orig_g, img_warped_g, src_g, dst_g,
+plot_matches(ax[1], img, imgg, src_g, dst_g,
              np.column_stack((inlier_idxs, inlier_idxs)), matches_color='r')
 ax[1].axis('off')
 ax[1].set_title('G Channel')
 
 inlier_idxs = np.nonzero(inliers_b)[0]
-plot_matches(ax[2], img_orig_b, img_warped_b, src_b, dst_b,
+plot_matches(ax[2], img, imgg, src_b, dst_b,
              np.column_stack((inlier_idxs, inlier_idxs)), matches_color='g')
 ax[2].axis('off')
 ax[2].set_title('B Channel')
